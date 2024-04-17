@@ -96,13 +96,8 @@ notesRouter.get('/:id', (req: Request, res: Response) => {
 
 })
 
-// Update - PUT -> TODO: Beispiel
-notesRouter.put('/:id', (req: Request, res: Response) => { 
-  // 1. Daten aus der Anfrage auslesen
-  // Wir erwarten, dass wir Informationen zum title, content, user
-
-  // const { title, content, user } = req.body
-
+// Update - PUT/PATCH -> TODO: Beispiel
+notesRouter.put('/:id', (req: Request, res: Response) => {
   const title = req.body.title
   const content = req.body.content
   const user = req.body.user
@@ -111,12 +106,13 @@ notesRouter.put('/:id', (req: Request, res: Response) => {
   const oldNote = getNoteById(id)
 
   if (oldNote === undefined) {
-    res.status(404).send(`Die Notiz mit ID ${id} wurde nicht gefunden.`)
-  }
+    res.status(404).send('Die Notiz mit ID ${id} wurde nicht gefunden.')
 
-  // 2.1 alte Daten abfragen
+    
+  }
   const oldNotes = getNotes()
   const filteredNotes = oldNotes.filter(note => note.id !== id)
+ 
 
   // 2.2 neue Notiz erstellen
   const newNote: Note = {
@@ -135,34 +131,56 @@ notesRouter.put('/:id', (req: Request, res: Response) => {
 
   // 3. Rückmeldung geben, ob alles funktioniert hat
 
-  res.status(204).send(`Die Notiz mit ID ${id} wurde aktualisiert.`)
-
-
+  res.status(204).send('Die Notiz mit der ID ${id} wurde aktualisiert.')
 })
 
-// Update - PATCH -> TODO: Beispiel
-notesRouter.patch('/:id', (req: Request, res: Response) => { })
 
-// Delete - DELETE
-notesRouter.delete('/:id', (req: Request, res: Response) => { 
+notesRouter.patch('/:id', (req: Request, res: Response) => {
+  const id = parseInt(req.params.id);
+  const updates = req.body; // Die Aktualisierungen, die in der Anfrage gesendet wurden
 
+  const oldNote = getNoteById(id);
+
+  if (oldNote === undefined) {
+    return res.status(404).send(`Die Notiz mit ID ${id} wurde nicht gefunden.`);
+  }
+
+  const oldNotes = getNotes();
+  const updatedNotes = oldNotes.map(note => {
+    if (note.id === id) {
+      return { ...note, ...updates }; // Aktualisiere die Felder der Notiz mit den neuen Werten
+    }
+    return note;
+  });
+
+  // Aktualisierte Notizen in Datei speichern
+  const newNotes = { notes: updatedNotes };
+  fs.writeFileSync('data/notes.json', JSON.stringify(newNotes));
+
+  res.status(204).send(`Die Notiz mit der ID ${id} wurde aktualisiert.`);
+});
+
+ // Delete - DELETE
+notesRouter.delete('/:id', (req: Request, res: Response) => {
   const id = parseInt(req.params.id)
 
   const oldNote = getNoteById(id)
 
   if (oldNote === undefined) {
-    res.status(404).send(`Die Notiz mit ID ${id} wurde nicht gefunden.`)
-  }
+    res.status(404).send('Die Notiz mit ID ${id} wurde nicht gefunden.')
 
-  // 2.1 alte Daten abfragen
+    
+  }
   const oldNotes = getNotes()
   const filteredNotes = oldNotes.filter(note => note.id !== id)
-
   const newNotes = { notes: filteredNotes }
   fs.writeFileSync('data/notes.json', JSON.stringify(newNotes))
 
   // 3. Rückmeldung geben, ob alles funktioniert hat
 
-  res.status(204).send(`Die Notiz mit ID ${id} wurde geloescht.`)
-
+  res.status(204).send('Die Notiz mit der ID ${id} wurde geloescht.')
 })
+
+
+
+ 
