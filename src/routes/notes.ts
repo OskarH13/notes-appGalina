@@ -2,6 +2,7 @@ import { Request, Response, Router } from 'express'
 import { getNotes, getNoteById, addNote, updateNote, deleteNoteById } from '../services/data'
 import { Note } from '../types/notes'
 import { hasAuthentication } from '../middleware/auth'
+import { RequestBody } from '../types/requestBody'
 
 
 export const notesRouter = Router()
@@ -16,11 +17,9 @@ export const notesRouter = Router()
  */
 notesRouter.post('/', hasAuthentication, (req: Request, res: Response) => {
 
-  const title: string = req.body.title
-  const content: string = req.body.content
-  const user: string = req.body.user
+  const {title, content, user, categories}: RequestBody = req.body
 
-  addNote(title, content, user)
+  addNote(title, content, user, categories)
 
   res.status(204).send()
 })
@@ -74,9 +73,8 @@ notesRouter.get('/:id', hasAuthentication, (req: Request, res: Response) => {
  */
 notesRouter.put('/:id', hasAuthentication, (req: Request, res: Response) => { 
 
-  const title: string = req.body.title
-  const content: string = req.body.content
-  const user: string = req.body.user
+  const {title, content, user, categories}: RequestBody = req.body
+
   const id: number = parseInt(req.params.id)
   const oldNote: Note | undefined = getNoteById(id)
 
@@ -85,7 +83,7 @@ notesRouter.put('/:id', hasAuthentication, (req: Request, res: Response) => {
     return
   }
 
-  updateNote(id, title, content, user)
+  updateNote(id, title, content, user, categories)
 
   res.status(204).send()
 })
@@ -112,8 +110,9 @@ notesRouter.patch('/:id', hasAuthentication, (req: Request, res: Response) => {
   const title: string = req.body.title ?? oldNote.title
   const content: string = req.body.content ?? oldNote.content
   const user: string = req.body.user ?? oldNote.user
+  const categories: string[] = req.body.categories ?? oldNote.categories
 
-  updateNote(id, title, content, user)
+  updateNote(id, title, content, user, categories)
 
   res.status(204).send()
  })
